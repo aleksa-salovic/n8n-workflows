@@ -1,0 +1,202 @@
+{
+  "name": "RAG Website Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://yourwebsite.com/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "89114633-edf4-4f45-82b2-740f22abb094",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "extractedContent",
+              "cssSelector": "body",
+              "returnValue": "html"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        0
+      ],
+      "id": "eb0ac747-8145-4d2f-9340-6d4d7abedb0a",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/ask-question",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "7a35f0c9-019d-4c9e-861a-2554c34fb489",
+      "name": "Webhook",
+      "webhookId": "ba720a06-bec4-494d-8470-61eb393156ba"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "271086e8-66d3-4e3b-adab-5a6600e21f43",
+              "name": "answer",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1220,
+        0
+      ],
+      "id": "bb4196a2-d887-421b-9e5a-d72e8f2b5cb2",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "\"You are a helpful assistant that answers questions based on the provided webpage content.\"",
+              "role": "system"
+            },
+            {
+              "content": "={{ $('HTTP Request').item.json.data }}\n{\"response\": \"{{$json['extractedContent']}}\"}\n\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        860,
+        0
+      ],
+      "id": "0a72eb6d-3636-43e5-936f-82bb31cb618d",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "GTo8unLVBI2pV8bK",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={\n  \"answer\": \"{{$node['OpenAI'].json['message']['content']}}\"\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "9ebdef7e-0c74-4f4f-b4de-c06b4859298a",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "943f9a2a-ac24-4592-9a7f-707051ccfb16",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7d8038a564f4b881f91c721d425f54210813c664e0bebf306bc6bd8344e17110"
+  },
+  "id": "EXculUqdHGZWdEwt",
+  "tags": []
+}
