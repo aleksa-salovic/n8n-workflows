@@ -1,0 +1,180 @@
+{
+  "name": "Google Maps Emails",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ee1cdfdd-0559-4fb4-97cb-117b7f7cd0db",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/lukaskrivka~google-maps-with-contact-details/run-sync-get-dataset-items?token=apify_api_mFlGQbqc3sI3aAHA7PXoMJwxrZAdgC11bxEd",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"language\": \"en\",\n    \"locationQuery\": \"Vienna\",\n    \"maxCrawledPlacesPerSearch\": 3,\n    \"searchStringsArray\": [\n        \"restaurants\"\n    ],\n    \"skipClosedPlaces\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "0c4b391f-ede2-4ec2-8f0a-5ef4f6ff810a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "title",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "address, categoryName, city, website, phoneUnformatted, emails",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "33f5ccc2-1816-4791-aeb2-2fca4f71b945",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1pwCHbwBUYztzigLR9YUnZmsWIMtqVsNEs0MClj2zc0o",
+          "mode": "list",
+          "cachedResultName": "Табела без наслова",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pwCHbwBUYztzigLR9YUnZmsWIMtqVsNEs0MClj2zc0o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pwCHbwBUYztzigLR9YUnZmsWIMtqVsNEs0MClj2zc0o/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Restaurant name": "={{ $json.title }}",
+            "Email": "={{ $json.emails[0] }}",
+            "Phone": "={{ $json.phoneUnformatted }}",
+            "Website": "={{ $json.website }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Restaurant name",
+              "displayName": "Restaurant name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        0
+      ],
+      "id": "259216ff-598e-4692-8bb0-0c654b1368c9",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3uSsBHbgIY5Vct8l",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e22ae30e-0112-4639-976e-9055b4e60163",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7d8038a564f4b881f91c721d425f54210813c664e0bebf306bc6bd8344e17110"
+  },
+  "id": "3sVo1A4EM09yHjNt",
+  "tags": []
+}
