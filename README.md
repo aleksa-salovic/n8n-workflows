@@ -20,8 +20,6 @@ Each workflow is stored as a .json file, which can be easily imported into your 
 🛠 How to Use
 1️⃣ Clone the Repository
 bash
-Копирај
-Измени
 git clone https://github.com/your-username/n8n-workflows.git
 cd n8n-workflows
 2️⃣ Import a Workflow into n8n
