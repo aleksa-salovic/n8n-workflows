@@ -1,0 +1,255 @@
+{
+  "name": "Update Database copy",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "search",
+        "query": "docx",
+        "returnAll": true,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -20
+      ],
+      "id": "5d40146f-3732-4720-bb37-9e6e6edef437",
+      "name": "Dropbox",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "cMS8pVfOIGEQFqJf",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "download",
+        "path": "={{$json[\"filePath\"]}}"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -20
+      ],
+      "id": "88e8b90e-0736-4ed6-8950-25af2565e8af",
+      "name": "Get Content",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "cMS8pVfOIGEQFqJf",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "n8n-masterclass",
+          "mode": "list",
+          "cachedResultName": "n8n-masterclass"
+        },
+        "options": {
+          "pineconeNamespace": "Restaurant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -20
+      ],
+      "id": "f3c3e6bb-6d82-489b-8c13-120223ca465c",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "a0HobEAxvYev7g15",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        202.5
+      ],
+      "id": "13d9616a-690d-4e71-b9c9-74c27299930e",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1308,
+        400
+      ],
+      "id": "d44fa4d0-e189-4bd4-8566-3c434c650978",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1060,
+        300
+      ],
+      "id": "2d7bc211-8bfe-46b4-9d3e-b8811acd1a81",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "GTo8unLVBI2pV8bK",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -20
+      ],
+      "id": "4413ec53-1ba2-411f-ae34-bacae3b0f23a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f43b015f-8fb3-41cf-ab9f-50a097b78159",
+              "name": "filePath",
+              "value": "={{$json[\"filePath\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        -20
+      ],
+      "id": "0b710078-ece9-419e-80e1-f155eadb0044",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Dropbox": {
+      "main": [
+        [
+          {
+            "node": "Get Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Content": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Dropbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4d3ae06d-4d4c-49d5-a342-03ba42a98431",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7d8038a564f4b881f91c721d425f54210813c664e0bebf306bc6bd8344e17110"
+  },
+  "id": "tgDno7f9yl4yc92b",
+  "tags": []
+}
